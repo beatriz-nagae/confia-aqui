@@ -17,48 +17,97 @@ import java.util.Optional;
 
 @Service
 public class QuizService {
+
     @Autowired
     QuizDao quizDao;
+
     @Autowired
     QuestionDao questionDao;
 
-
     public ResponseEntity<String> createQuiz(String category, int numQ, String title) {
+        // Busca perguntas aleatórias da categoria
+        List<Question> questions = questionDao.findRandomQuestionsByCategory(category, numQ);
 
- List<Question> questions = questionDao.findRandomQuestionsByCategory(category, numQ);
-     // teste   List<Question> questions = new ArrayList<>(); // teste rápido
+        // Verifica se encontrou perguntas suficientes
+        if (questions.isEmpty()) {
+            return new ResponseEntity<>("Nenhuma pergunta encontrada para a categoria: " + category, HttpStatus.NOT_FOUND);
+        }
 
+        if (questions.size() < numQ) {
+            return new ResponseEntity<>("Apenas " + questions.size() + " perguntas disponíveis para esta categoria", HttpStatus.BAD_REQUEST);
+        }
+
+        // Cria e salva o quiz
         Quiz quiz = new Quiz();
         quiz.setTitle(title);
         quiz.setQuestions(questions);
         quizDao.save(quiz);
 
-        return new ResponseEntity<>("Sucesso criando o quiz", HttpStatus.CREATED);
-
+        return new ResponseEntity<>("Quiz criado com sucesso! ID: " + quiz.getId(), HttpStatus.CREATED);
     }
 
+    //HOTFIX CORREÇÃO BUG: Agora verifica se o quiz existe antes de usar .get()
     public ResponseEntity<List<QuestionWrapper>> getQuizQuestions(Integer id) {
-       Optional<Quiz> quiz = quizDao.findById(id);
-       List<Question> questionsFromDB = quiz.get().getQuestions();
-       List<QuestionWrapper> questionsForUser = new ArrayList<>();
-for (Question q : questionsFromDB) {
-    QuestionWrapper qw = new QuestionWrapper(q.getId(), q.getQuestionTitle(), q.getOption1(), q.getOption2(), q.getOption3(), q.getOption4());
-    questionsForUser.add(qw);
-}
+        Optional<Quiz> quizOptional = quizDao.findById(id);
 
-       return new ResponseEntity<>(questionsForUser, HttpStatus.OK);
+        // Verifica se o quiz existe
+        if (quizOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Quiz quiz = quizOptional.get();
+        List<Question> questionsFromDB = quiz.getQuestions();
+        List<QuestionWrapper> questionsForUser = new ArrayList<>();
+
+        // Converte Question para QuestionWrapper (sem mostrar a resposta correta)
+        for (Question q : questionsFromDB) {
+            QuestionWrapper qw = new QuestionWrapper(
+                    q.getId(),
+                    q.getQuestionTitle(),
+                    q.getOption1(),
+                    q.getOption2(),
+                    q.getOption3(),
+                    q.getOption4()
+            );
+            questionsForUser.add(qw);
+        }
+
+        return new ResponseEntity<>(questionsForUser, HttpStatus.OK);
     }
 
+    //HOTFIX CORREÇÃO BUG: Verifica se quiz existe e tb protege contra IndexOutOfBoundsException
     public ResponseEntity<Integer> calculateResult(Integer id, List<Response> responses) {
-  Quiz quiz = quizDao.findById(id).get();
-  List<Question> questions = quiz.getQuestions();
-    int right = 0;
-    int i = 0;
-  for(Response response : responses){
-    if(response.getResponse().equals(questions.get(i).getRightAnswer()))
-        right++;
-        i++;
-  }
-  return new ResponseEntity<>(right, HttpStatus.OK);
+        Optional<Quiz> quizOptional = quizDao.findById(id);
+
+        // Verifica se o quiz existe
+        if (quizOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Quiz quiz = quizOptional.get();
+        List<Question> questions = quiz.getQuestions();
+
+        // Validação de segurança
+        if (responses == null || responses.isEmpty()) {
+            return new ResponseEntity<>(0, HttpStatus.BAD_REQUEST);
+        }
+
+        int right = 0;
+
+        //HOTFIX CORREÇÃO BUG: Usa o menor tamanho para evitar IndexOutOfBoundsException
+        int maxIndex = Math.min(responses.size(), questions.size());
+
+        for (int i = 0; i < maxIndex; i++) {
+            Response response = responses.get(i);
+            Question question = questions.get(i);
+
+            // Verifica se a resposta está correta
+            if (response.getResponse() != null &&
+                    response.getResponse().equals(question.getRightAnswer())) {
+                right++;
+            }
+        }
+
+        return new ResponseEntity<>(right, HttpStatus.OK);
     }
 }
