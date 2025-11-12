@@ -1,6 +1,5 @@
 package br.com.confia_aqui.controller;
 
-
 import br.com.confia_aqui.model.Question;
 import br.com.confia_aqui.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,29 +10,174 @@ import java.util.List;
 
 @RestController
 @RequestMapping("question")
+@CrossOrigin(origins = "*") // Quando hospedarmos o projeto, mudar para a URL REAL PROD
 public class QuestionController {
 
     @Autowired
     QuestionService questionService;
 
-    //req get para todas as questions
-    @GetMapping("allQuestions")
-    public ResponseEntity<List<Question>> getAllQuestions(){
-         return questionService.getAllQuestions();
-
-    }
-
-    //req get para uma categoria específica
-    @GetMapping("category/{category}")
-    public ResponseEntity<List<Question>> getQuestionsByCategory(@PathVariable String category){
-    return questionService.getQuestionsByCategory(category);
-
-    }
-//ADICIONAR PERGUNTA. NAO ESPECIFICAMOS ID POIS ELE É GERADO AUTOMATICAMENTE
+    // CRUD CREATE - cria uma pergunta 
     @PostMapping("add")
-    public ResponseEntity<String>addQuestion(@RequestBody Question question){
+    public ResponseEntity<String> addQuestion(@RequestBody Question question) {
+
+        // Validação: categoria não pode ser null
+        if (question.getQuestionTitle() == null || question.getQuestionTitle().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("O título da pergunta é obrigatório");
+        }
+
+        if (question.getOption1() == null || question.getOption1().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A opção 1 é obrigatória");
+        }
+
+        if (question.getOption2() == null || question.getOption2().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A opção 2 é obrigatória");
+        }
+
+        if (question.getOption3() == null || question.getOption3().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A opção 3 é obrigatória");
+        }
+
+        if (question.getOption4() == null || question.getOption4().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A opção 4 é obrigatória");
+        }
+
+        if (question.getRightAnswer() == null || question.getRightAnswer().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A resposta correta é obrigatória");
+        }
+
+        if (question.getCategory() == null || question.getCategory().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A categoria é obrigatória");
+        }
+
+        if (question.getDifficultyLevel() == null || question.getDifficultyLevel().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("O nível de dificuldade é obrigatório");
+        }
+
+        // Selecionar qual a resposta certa
+        String rightAnswer = question.getRightAnswer().trim();
+        if (!rightAnswer.equals(question.getOption1().trim()) &&
+                !rightAnswer.equals(question.getOption2().trim()) &&
+                !rightAnswer.equals(question.getOption3().trim()) &&
+                !rightAnswer.equals(question.getOption4().trim())) {
+            return ResponseEntity.badRequest()
+                    .body("A resposta correta deve ser uma das 4 opções fornecidas");
+        }
+
         return questionService.addQuestion(question);
     }
 
-//56
+    // CRUD READ - Buscar todas as questões
+    @GetMapping("allQuestions")
+    public ResponseEntity<List<Question>> getAllQuestions() {
+        return questionService.getAllQuestions();
+    }
+
+    // CRUD READ - Buscar por categoria
+    @GetMapping("category/{category}")
+    public ResponseEntity<List<Question>> getQuestionsByCategory(@PathVariable String category) {
+
+        if (category == null || category.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return questionService.getQuestionsByCategory(category.trim());
+    }
+
+    // CRUD READ - Buscar uma questão pelo ID deka
+    @GetMapping("{id}")
+    public ResponseEntity<Question> getQuestionById(@PathVariable Integer id) {
+
+        if (id == null || id <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return questionService.getQuestionById(id);
+    }
+
+    // CRUD UPDATE - atualiza uma pergunta buscada pelo d id
+    @PutMapping("update/{id}")
+    public ResponseEntity<String> updateQuestion(
+            @PathVariable Integer id,
+            @RequestBody Question question) {
+
+        // valida o id
+        if (id == null || id <= 0) {
+            return ResponseEntity.badRequest()
+                    .body("ID inválido");
+        }
+
+        // Validações de segurança. Não pode ser null nem vazio
+        if (question.getQuestionTitle() == null || question.getQuestionTitle().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("O título da pergunta é obrigatório");
+        }
+
+        if (question.getOption1() == null || question.getOption1().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A opção 1 é obrigatória");
+        }
+
+        if (question.getOption2() == null || question.getOption2().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A opção 2 é obrigatória");
+        }
+
+        if (question.getOption3() == null || question.getOption3().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A opção 3 é obrigatória");
+        }
+
+        if (question.getOption4() == null || question.getOption4().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A opção 4 é obrigatória");
+        }
+
+        if (question.getRightAnswer() == null || question.getRightAnswer().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A resposta correta é obrigatória");
+        }
+
+        if (question.getCategory() == null || question.getCategory().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("A categoria é obrigatória");
+        }
+
+        if (question.getDifficultyLevel() == null || question.getDifficultyLevel().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("O nível de dificuldade é obrigatório");
+        }
+
+        // Validação: resposta correta deve ser uma das opções
+        String rightAnswer = question.getRightAnswer().trim();
+        if (!rightAnswer.equals(question.getOption1().trim()) &&
+                !rightAnswer.equals(question.getOption2().trim()) &&
+                !rightAnswer.equals(question.getOption3().trim()) &&
+                !rightAnswer.equals(question.getOption4().trim())) {
+            return ResponseEntity.badRequest()
+                    .body("A resposta correta deve ser uma das 4 opções fornecidas");
+        }
+
+        return questionService.updateQuestion(id, question);
+    }
+
+    // CRUD DELETE - Deletar pergunta 
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<String> deleteQuestion(@PathVariable Integer id) {
+
+        // Validação do ID
+        if (id == null || id <= 0) {
+            return ResponseEntity.badRequest()
+                    .body("ID inválido");
+        }
+
+        return questionService.deleteQuestion(id);
+    }
 }
