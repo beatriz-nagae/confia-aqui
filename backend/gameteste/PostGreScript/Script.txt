@@ -1,4 +1,10 @@
-CREATE TABLE Question (
+-- ============================================
+-- SCRIPT SQL PARA POSTGRESQL (AZURE)
+-- Sistema de Quiz - Golpe do Presente
+-- ============================================
+
+-- Criar tabela Question
+CREATE TABLE IF NOT EXISTS Question (
     id SERIAL PRIMARY KEY,
     question_title TEXT NOT NULL,
     option1 TEXT NOT NULL,
@@ -10,27 +16,182 @@ CREATE TABLE Question (
     category TEXT NOT NULL
 );
 
+-- Criar tabela Quiz
+CREATE TABLE IF NOT EXISTS Quiz (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL
+);
+
+-- Criar tabela de relacionamento Quiz-Question (Many-to-Many)
+CREATE TABLE IF NOT EXISTS quiz_questions (
+    quiz_id INTEGER NOT NULL,
+    questions_id INTEGER NOT NULL,
+    FOREIGN KEY (quiz_id) REFERENCES Quiz(id),
+    FOREIGN KEY (questions_id) REFERENCES Question(id)
+);
+
+-- ============================================
+-- INSERIR PERGUNTAS DE EXEMPLO
+-- ============================================
+-- IMPORTANTE: right_answer deve ser EXATAMENTE igual a uma das 4 opções!
 
 INSERT INTO Question (question_title, option1, option2, option3, option4, right_answer, difficulty_level, category)
- -- a principio opcao1 eh a certa default
 VALUES
-    ('Pergunta 1, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Easy', 'categoria1'), 
-    ('Pergunta 2, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Easy', 'categoria1'),
-    ('Pergunta 3, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Easy', 'categoria5'),
-    ('Pergunta 4, blablabla??', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Medium', 'categoria1'),
-    ('Pergunta 5, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Medium', 'categoria1'),
-    ('Pergunta 6, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Hard', 'categoria1'),
-    ('Pergunta 7, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Easy', 'categoria4'),
-    ('Pergunta 8, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Easy', 'categoria2'),
-    ('Pergunta 9, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Easy', 'categoria1'),
-    ('Pergunta 10, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Medium', 'categoria1'),
-    ('Pergunta 11, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Medium', 'categoria2'),
-    ('Pergunta 12, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Medium', 'categoria1'),
-    ('Pergunta 13, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Medium', 'categoria3'),
-    ('Pergunta 14, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Easy', 'categoria1'),
-    ('Pergunta 15, blablabla?', 'opcao1', 'opcao2', 'opcao3', 'opcao4', 'opcao1', 'Easy', 'categoria2');
+    -- Categoria: golpe_presente
+    ('Você recebeu um link para ganhar um presente grátis. O que você faz?',
+     'Clico imediatamente para não perder',
+     'Verifico se o site é oficial antes de clicar',
+     'Compartilho com amigos para todos ganharem',
+     'Forneço meus dados bancários',
+     'Verifico se o site é oficial antes de clicar',
+     'Easy',
+     'golpe_presente'),
 
-	SELECT * FROM Question
+    ('Um site pede seu CPF e senha do banco para "confirmar identidade". Isso é:',
+     'Normal e seguro',
+     'Um golpe - nunca forneça essas informações',
+     'Aceitável se o site for bonito',
+     'Necessário para ganhar prêmios',
+     'Um golpe - nunca forneça essas informações',
+     'Easy',
+     'golpe_presente'),
 
+    ('Qual desses sinais NÃO indica um possível golpe?',
+     'Urgência para tomar decisão rápida',
+     'Site com HTTPS e certificado válido',
+     'Erros de português no texto',
+     'Pedido de pagamento antecipado',
+     'Site com HTTPS e certificado válido',
+     'Medium',
+     'golpe_presente'),
 
+    ('Um e-mail diz que você ganhou um iPhone, mas precisa pagar o frete de R$ 50. O que fazer?',
+     'Pago o frete, é barato!',
+     'Ignoro - provavelmente é golpe',
+     'Compartilho com amigos',
+     'Forneço dados do cartão',
+     'Ignoro - provavelmente é golpe',
+     'Easy',
+     'golpe_presente'),
 
+    ('Como verificar se um site é confiável?',
+     'Apenas pela aparência bonita',
+     'Se tem muitas cores',
+     'Verificando HTTPS, avaliações e dados da empresa',
+     'Se promete presentes grátis',
+     'Verificando HTTPS, avaliações e dados da empresa',
+     'Medium',
+     'golpe_presente'),
+
+    ('O que é phishing?',
+     'Um tipo de peixe',
+     'Técnica de golpe para roubar dados pessoais',
+     'Um jogo online',
+     'Um aplicativo de mensagens',
+     'Técnica de golpe para roubar dados pessoais',
+     'Hard',
+     'golpe_presente'),
+
+    ('Você recebe uma mensagem dizendo que ganhou na loteria que nunca jogou. O que fazer?',
+     'Comemorar e fornecer dados bancários',
+     'Deletar - é golpe',
+     'Compartilhar a notícia',
+     'Pagar taxa administrativa',
+     'Deletar - é golpe',
+     'Easy',
+     'golpe_presente'),
+
+    ('Qual a melhor forma de proteger suas senhas?',
+     'Usar a mesma senha em todos os sites',
+     'Anotar em papel visível',
+     'Usar senhas diferentes e fortes para cada site',
+     'Compartilhar com amigos',
+     'Usar senhas diferentes e fortes para cada site',
+     'Medium',
+     'golpe_presente'),
+
+    ('Um site oferece produto de R$ 5000 por R$ 50. Isso é:',
+     'Uma promoção incrível!',
+     'Suspeito demais - provavelmente golpe',
+     'Oportunidade única',
+     'Normal na internet',
+     'Suspeito demais - provavelmente golpe',
+     'Easy',
+     'golpe_presente'),
+
+    ('O que fazer ao desconfiar de um golpe?',
+     'Ignorar e seguir em frente',
+     'Denunciar às autoridades e alertar outros',
+     'Tentar mesmo assim',
+     'Compartilhar o link',
+     'Denunciar às autoridades e alertar outros',
+     'Medium',
+     'golpe_presente'),
+
+    -- Categoria: seguranca_digital
+    ('O que é autenticação de dois fatores (2FA)?',
+     'Uma senha muito longa',
+     'Camada extra de segurança além da senha',
+     'Um tipo de vírus',
+     'Um aplicativo de jogos',
+     'Camada extra de segurança além da senha',
+     'Medium',
+     'seguranca_digital'),
+
+    ('Você deve compartilhar suas senhas com:',
+     'Seus melhores amigos',
+     'Sua família',
+     'Ninguém',
+     'Empresas que pedem',
+     'Ninguém',
+     'Easy',
+     'seguranca_digital'),
+
+    ('O que significa HTTPS no início de um site?',
+     'É um site de notícias',
+     'Conexão segura e criptografada',
+     'Site mais rápido',
+     'Site colorido',
+     'Conexão segura e criptografada',
+     'Medium',
+     'seguranca_digital'),
+
+    ('Com que frequência você deve atualizar suas senhas?',
+     'Nunca',
+     'Regularmente (a cada 3-6 meses)',
+     'Apenas quando esquecer',
+     'A cada 10 anos',
+     'Regularmente (a cada 3-6 meses)',
+     'Easy',
+     'seguranca_digital'),
+
+    ('O que é engenharia social em segurança digital?',
+     'Curso de computação',
+     'Manipulação psicológica para obter informações',
+     'Rede social',
+     'Aplicativo de fotos',
+     'Manipulação psicológica para obter informações',
+     'Hard',
+     'seguranca_digital');
+
+-- ============================================
+-- VERIFICAR DADOS INSERIDOS
+-- ============================================
+SELECT * FROM Question;
+
+-- ============================================
+-- CONSULTAS ÚTEIS PARA TESTES
+-- ============================================
+
+-- Ver todas as categorias disponíveis
+SELECT DISTINCT category FROM Question;
+
+-- Contar perguntas por categoria
+SELECT category, COUNT(*) as total
+FROM Question
+GROUP BY category;
+
+-- Contar perguntas por dificuldade
+SELECT difficulty_level, COUNT(*) as total
+FROM Question
+GROUP BY difficulty_level;
