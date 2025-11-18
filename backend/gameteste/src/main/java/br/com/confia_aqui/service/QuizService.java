@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,11 +26,10 @@ public class QuizService {
     @Autowired
     QuestionDao questionDao;
 
+    //obtem as perguntas que vao compor o quiz
     public ResponseEntity<String> createQuiz(String category, int numQ, String title) {
         List<Question> questions = questionDao.findRandomQuestionsByCategory(category, numQ);
-// teste   List<Question> questions = new ArrayList<>(); // teste rapido caso de erro e quer saber se com a lista vazia funciona
 
-        //envia mensagem de erro caso nao tenha perguntass suficientes
         if (questions.isEmpty()) {
             throw new InsufficientQuestionsException(category, numQ, 0);
         }
@@ -40,7 +38,6 @@ public class QuizService {
             throw new InsufficientQuestionsException(category, numQ, questions.size());
         }
 
-        //cria o quiz e salva no banco
         Quiz quiz = new Quiz();
         quiz.setTitle(title);
         quiz.setQuestions(questions);
@@ -49,8 +46,7 @@ public class QuizService {
         return new ResponseEntity<>("Quiz criado com sucesso! ID: " + quiz.getId(), HttpStatus.CREATED);
     }
 
-    //busca o quiz e devolve ele logicamente sem a resposta certa e envia ao
-    //usuario via ResponseEntity
+//puxa um quiz existente pelo ID e retorna as perguntas (sem as respostas corretas)
     public ResponseEntity<List<QuestionWrapper>> getQuizQuestions(Integer id) {
         Optional<Quiz> quizOptional = quizDao.findById(id);
 
@@ -58,15 +54,11 @@ public class QuizService {
             throw new QuizNotFoundException(id);
         }
 
-        //pega o quiz do optional
         Quiz quiz = quizOptional.get();
-        //pega as perguntas do quiz
         List<Question> questionsFromDB = quiz.getQuestions();
-        //cria uma lista vazia para o QWrapper
         List<QuestionWrapper> questionsForUser = new ArrayList<>();
 
-
-        //converte as perguntas em QWrapper sem a resposta certa
+        //question wrapper (responsavel para nao enviar a resposta correta)
         for (Question q : questionsFromDB) {
             QuestionWrapper qw = new QuestionWrapper(
                     q.getId(),
@@ -81,4 +73,38 @@ public class QuizService {
 
         return new ResponseEntity<>(questionsForUser, HttpStatus.OK);
     }
+
+    //calcula o resultado do quiz
+    public ResponseEntity<QuizResult> calculateResult(Integer id, List<Response> responses) {
+        Optional<Quiz> quizOptional = quizDao.findById(id);
+
+        if (quizOptional.isEmpty()) {
+            throw new QuizNotFoundException(id);
+        }
+
+        Quiz quiz = quizOptional.get();
+        List<Question> questions = quiz.getQuestions();
+
+        if (responses == null || responses.isEmpty()) {
+            throw new IllegalArgumentException("Lista de respostas não pode ser vazia");
+        }
+
+        int correctAnswers = 0;
+        int maxIndex = Math.min(responses.size(), questions.size());
+
+        for (int i = 0; i < maxIndex; i++) {
+            Response response = responses.get(i);
+            Question question = questions.get(i);
+
+            if (response.getResponse() != null &&
+                    response.getResponse().equals(question.getRightAnswer())) {
+                correctAnswers++;
+            }
+        }
+
+        //retora o resultado do quiz com  para entregar
+        // os 3 niveis de conhecimento/vulnerabilidade do user
+        QuizResult result = new QuizResult(id, questions.size(), correctAnswers);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
+}

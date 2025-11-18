@@ -1,7 +1,4 @@
--- ============================================
 -- SCRIPT SQL PARA POSTGRESQL (AZURE)
--- Sistema de Quiz - Golpe do Presente
--- ============================================
 
 -- Criar tabela Question
 CREATE TABLE IF NOT EXISTS Question (
@@ -30,11 +27,8 @@ CREATE TABLE IF NOT EXISTS quiz_questions (
     FOREIGN KEY (questions_id) REFERENCES Question(id)
 );
 
--- ============================================
--- INSERIR PERGUNTAS DE EXEMPLO
--- ============================================
--- IMPORTANTE: right_answer deve ser EXATAMENTE igual a uma das 4 opções!
 
+-- INSERIR PERGUNTAS
 INSERT INTO Question (question_title, option1, option2, option3, option4, right_answer, difficulty_level, category)
 VALUES
     -- Categoria: golpe_presente
@@ -174,14 +168,12 @@ VALUES
      'Hard',
      'seguranca_digital');
 
--- ============================================
+
 -- VERIFICAR DADOS INSERIDOS
--- ============================================
 SELECT * FROM Question;
 
--- ============================================
+
 -- CONSULTAS ÚTEIS PARA TESTES
--- ============================================
 
 -- Ver todas as categorias disponíveis
 SELECT DISTINCT category FROM Question;
