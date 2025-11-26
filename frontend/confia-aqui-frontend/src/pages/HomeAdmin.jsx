@@ -128,11 +128,11 @@ function HomeAdmin() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="flex flex-col w-screen h-screen">
       {/* Header Admin */}
       <HeaderAdmin />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-16">
+      <main className="w-full justify-center items-center px-4 sm:px-6 lg:px-8 py-8 mt-16">
         {/* Cabeçalho da Página */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -163,7 +163,6 @@ function HomeAdmin() {
         {/* Estado Vazio */}
         {!loading && faqsArray.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
-            <div className="text-6xl text-gray-400 mb-4">?</div>
             <h3 className="text-xl font-semibold text-cinza-600 mb-2">Nenhuma FAQ cadastrada</h3>
             <p className="text-cinza-500 mb-6">Comece criando sua primeira pergunta frequente</p>
             <button
