@@ -191,8 +191,7 @@ Header → Authorization: Bearer SEU_TOKEN_AQUI
 #### 4. Após o login
 Todas as rotas detalhadas (corpos, headers e exemplos) podem ser importadas diretamente no Postman através da collection disponível no repositório:
 
-📁 *Arquivo da collection:*  
-`/backend/postman/confia-aqui-collection.json`
+📁 [Arquivo da collection](./backend/postman/confia-aqui-collection.json)
 
 Para utilizar:
 
