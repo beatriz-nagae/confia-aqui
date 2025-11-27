@@ -66,7 +66,7 @@ public class QuizService {
         List<Question> questionsFromDB = quiz.getQuestions();
         List<QuestionWrapper> questionsForUser = new ArrayList<>();
 
-        //question wrapper (responsavel para nao enviar a resposta correta)
+        //question wrapper (responsavel para nao enviar a resposta correta pro user)
         for (Question q : questionsFromDB) {
             QuestionWrapper qw = new QuestionWrapper(
                 q.getId(),
@@ -82,7 +82,7 @@ public class QuizService {
         return new ResponseEntity<>(questionsForUser, HttpStatus.OK);
     }
 
-    //calcula o resultado do quiz
+    //calcula o resultado do quiz - MUDANCA REALIZADA AQUI (array tirado, 1st pergunta estava como indice 0)
     public ResponseEntity<QuizResult> calculateResult(Integer id, List<Response> responses) {
         Optional<Quiz> quizOptional = quizDao.findById(id);
 
@@ -98,28 +98,33 @@ public class QuizService {
         }
 
         int correctAnswers = 0;
-        int maxIndex = Math.min(responses.size(), questions.size());
 
-        for (int i = 0; i < maxIndex; i++) {
-            Response response = responses.get(i);
-            Question question = questions.get(i);
+        // iterate as respostas e busca a pergunta correspondente pelo ID
+        for (Response response : responses) {
+            if (response.getId() == null || response.getResponse() == null) {
+                continue;
+            }
 
-            if (response.getResponse() != null && question.getRightAnswer() != null) {
-                String respTrim = response.getResponse().trim();
-                String rightTrim = question.getRightAnswer().trim();
-                if (respTrim.equalsIgnoreCase(rightTrim)) {
-                    correctAnswers++;
+            // busca a pergunta pelo ID em vez de usar índice
+            for (Question question : questions) {
+                if (question.getId().equals(response.getId())) {
+                    if (question.getRightAnswer() != null) {
+                        String respTrim = response.getResponse().trim();
+                        String rightTrim = question.getRightAnswer().trim();
+                        if (respTrim.equalsIgnoreCase(rightTrim)) {
+                            correctAnswers++;
+                        }
+                    }
+                    break;
                 }
             }
         }
 
-        //retora o resultado do quiz com  para entregar
-        // os 3 niveis de conhecimento/vulnerabilidade do user
         QuizResult result = new QuizResult(id, questions.size(), correctAnswers);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    // Verifica se a resposta para uma pergunta do quiz está correta
+    // verifica se ta certo ou errado
     public boolean checkAnswer(Integer quizId, Integer questionId, String answer) {
         logger.debug("[QuizService] checkAnswer: quizId={}, questionId={}, answer='{}'", quizId, questionId, (answer==null?"null":answer));
         Optional<Quiz> quizOptional = quizDao.findById(quizId);
@@ -130,19 +135,19 @@ public class QuizService {
         Quiz quiz = quizOptional.get();
         List<Question> questions = quiz.getQuestions();
         if (questions == null || questions.isEmpty()) {
-            // nenhuma pergunta atrelada a esse quiz
+            // erro quiz sem perguntas
             throw new QuestionNotFoundException("Question not found for quizId=" + quizId);
         }
 
         for (Question q : questions) {
-            // proteger contra NPEs
+            // protege contra NPEs
             if (Objects.equals(q.getId(), questionId)) {
                 String right = q.getRightAnswer();
                 if (right == null || answer == null) return false;
                 return right.trim().equalsIgnoreCase(answer.trim());
             }
         }
-        // se chegar aqui, a pergunta nao pertence ao quiz
+        // question not found erro
         throw new QuestionNotFoundException("Question id " + questionId + " not found in quiz " + quizId);
     }
 
