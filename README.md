@@ -132,12 +132,13 @@ Para executar o projeto, siga as instruções detalhadas nos READMEs de cada par
 ## 📝 Contribuições
 | Nome             | Função                                                        |
 |------------------|---------------------------------------------------------------|
-| Beatriz Nagae    | Backend e Frontend                                            |
+| Beatriz Nagae    | Backend, Frontend e Banco de dados                            |
 | Davi Rocha       | Banco de dados e Frontend                                     |
 | Fábio Gomes      | Banco de dados e Frontend                                     |
 | Karine Ferreira  | Frontend, Integração e Documentação frontend (README)         |
 | Rafael Carvalho  | Frontend                                                      |
 | Rayssa Andrade   | Backend, Integração e Documentação do Backend e Geral (README)|
 | Rhaissa Santos   | Frontend                                                      |
+
 
 
