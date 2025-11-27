@@ -33,7 +33,7 @@ function Teste() {
             )}
 
             {iniciado && !finalizado && perguntas.length > 0 && (
-                <div className="pt-20 px-4 w-screen h-screen flex justify-center items-start">
+                <div className="pt-20 px-4 w-screen h-screen flex justify-center items-center">
                     <div className="w-full max-w-xl bg-white p-8 rounded-2xl shadow-xl">
 
                         <div className="w-full bg-gray-200 rounded-full h-3 mb-6 overflow-hidden">
